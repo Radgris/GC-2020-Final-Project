@@ -294,19 +294,6 @@ function run() {
         run();
     });
     renderer.render(scene, camera);
-    var orbitControls = new THREE.OrbitControls(camera, renderer.domElement);
-    orbitControls.enabled = true;
-    orbitControls.enableZoom = true;
-    orbitControls.enablePan = true;
-    //orbitControls.enableDamping = true;
-    orbitControls.autoRotate = false;
-    orbitControls.enableKeys = true;
-    orbitControls.panSpeed = 0.005;
-    orbitControls.zoomSpeed = 0.005;
-    orbitControls.rotateSpeed = 0.005;
-    orbitControls.keyPanSpeed = 0.05;
-    orbitControls.maxZoom = 2.0;
-    //orbitControls.dampingFactor = 0.99;
 
 
     animate();
