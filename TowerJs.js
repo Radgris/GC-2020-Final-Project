@@ -29,7 +29,7 @@ var atargetedEnemy=0;
 var gtargetedEnemy=0;
 var levelLimit = 5;
 
-var enemyspeed = 0.09;
+var enemyspeed = 0.15;
 var enemyLimit = 5;
 
 var score = 0;
