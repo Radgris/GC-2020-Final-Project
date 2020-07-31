@@ -25,7 +25,8 @@ var gbulletMax = 1;
 var abulletfired = 0;
 var abulletMax = 1;
 
-
+var atargetedEnemy=0;
+var gtargetedEnemy=0;
 var levelLimit = 5;
 
 var enemyspeed = 0.02;
@@ -99,7 +100,7 @@ function FireGroundTurret(array, enemy) {
         }
         gbulletfired = 1;
 
-        movegroundProj(bult, enemy);
+        movegroundProj(bult, groundArray[gtargetedEnemy]);
     }
 
 
@@ -123,10 +124,14 @@ function movegroundProj(bult, enemy) {
     if (bult.position.x > enemy.position.x - .051 && bult.position.x < enemy.position.x + .051 &&
         bult.position.y > enemy.position.y - .051 && bult.position.y < enemy.position.y + .051) {
 
-        console.log("true")
         scene.remove(bult);
-        enemyLoose(enemy);
+        enemyLoose(enemy, groundArray);
         bult.position.set(-100, -100);
+        enemy.position.set(100,1000,10000);
+        //gtargetedEnemy++;
+        if(groundArray.length==gtargetedEnemy){
+            gtargetedEnemy = 0;
+        }
         gbulletfired = 0;
     }
 }
@@ -150,7 +155,7 @@ function FireAirTurret(array, enemy) {
         }
         abulletfired = 1;
 
-        moveairProj(bul, enemy);
+        moveairProj(bul, airArray[atargetedEnemy]);
     }
 
 }
@@ -180,8 +185,13 @@ function moveairProj(bul, enemy) {
 
         console.log("true")
         scene.remove(bul);
-        enemyLoose(enemy);
+        enemyLoose(enemy, airArray);
         bul.position.set(-100, -100);
+        enemy.position.set(100,1000,10000);
+        //atargetedEnemy++;
+        if(airArray.length == atargetedEnemy){
+            atargetedEnemy = 0;
+        }
         abulletfired = 0;
     }
 
@@ -236,7 +246,7 @@ function enemyWin(enemy) {
     }
 }
 
-function enemyLoose(enemy) {
+function enemyLoose(enemy, array) {
 
     /*
     console.log(enemy);
@@ -244,6 +254,8 @@ function enemyLoose(enemy) {
     */
     score += 50;
     scene.remove(enemy);
+    array.shift();
+    //array[0].milestone = 4;
     document.getElementById("prompt").innerHTML = "Score: " + score;
     currentEnemies -= .5;
 
@@ -360,8 +372,8 @@ function createTurret(event) {
     // calculate mouse position in normalized device coordinates
     // (-1 to +1) for both components
 
-    mouse.x = ((event.clientX / window.innerWidth) * 2 - 1) * 12;
-    mouse.y = -((event.clientY / window.innerHeight) * 2 + 1) * 2;
+    mouse.x = ((event.clientX / window.innerWidth) * 2 - 1) * 10;
+    mouse.y = -((event.clientY / window.innerHeight) * 2 + 1) * 2.5;
 
 
     MoontextureUrl = "/models/Monster.jpg";
