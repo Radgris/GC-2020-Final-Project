@@ -7,16 +7,17 @@ airGroup = null,
 groundArray=[],
 airArray=[];
 
-var enemyspeed = 0.12;
-
 var life = 100;
-
 var targetYPos = -15;
 var ystart = 10;
 var delta = 0.05;
-var currentEnemies=0;
-var enemyLimit = 5;
+var currentLevel = 1;
+var currentEnemies = 0;
+
 var levelLimit = 5;
+
+var enemyspeed = 0.12;
+var enemyLimit = 5;
 
 var loader = new THREE.GLTFLoader();
 function CreateGroundEnemy(y) {
@@ -35,12 +36,10 @@ function CreateGroundEnemy(y) {
 }
 
 function CreatFlyerEnemy(y){
-
     loader.load('/models/Duck.gltf', function ( obj ) {
-
             obj.scene.rotation.x = Math.PI / 2;
             obj.scene.rotation.y = -Math.PI / 2;
-            obj.scene.position.set(0,y,3);
+            obj.scene.position.set(0,y+2,3);
             obj.scene.hitpoints = 3;
             obj.scene.milestone = 0;
             scene.add( obj.scene );
@@ -53,15 +52,21 @@ function CreatFlyerEnemy(y){
     });
 }
 
+function createEnemies(){
+    /*
+    console.log("curr: "+currentEnemies+ " limit: "+ enemyLimit);
+    console.log(currentEnemies < enemyLimit)
+    */
+    for(currentEnemies;currentEnemies < enemyLimit; currentEnemies++){
+        CreateGroundEnemy(currentEnemies); 
+        CreatFlyerEnemy(currentEnemies*2);
+    };
+}
+
 function moveEnemies(array ) {
     array.forEach(element => {
         moveEnemy(element);
     });
-    if(currentEnemies < enemyLimit){
-    currentEnemies++;
-    CreateGroundEnemy(currentEnemies); 
-    CreatFlyerEnemy(currentEnemies*2);
-    } 
 }
 
 function moveEnemy(enemy) {
@@ -91,6 +96,12 @@ function moveEnemy(enemy) {
             enemyWin(enemy);
             break;
         case 4:
+            if(currentEnemies == 0)
+           /* {   
+                currentLevel+=1
+                console.log("new level: " + currentLevel)
+                level(currentLevel);
+            }*/
             break;
     }
 }
@@ -100,7 +111,15 @@ function enemyWin(enemy){
     enemy.position.y = 1;
     enemy.milestone = 4;
     console.log(life);
-    //scene.remove(enemy.scene)
+    /*
+    console.log(enemy);
+    scene.remove(enemy);
+    */
+   
+   currentEnemies-=1;
+
+   /**/
+
 }
 
 function animate() 
@@ -126,8 +145,7 @@ function run() {
     orbitControls.maxZoom = 2.0;
     //orbitControls.dampingFactor = 0.99;
 
-    animate();
-    
+    animate();   
 }
 
 function createScene(canvas)
@@ -159,7 +177,10 @@ function createScene(canvas)
     scene.add(groundGroup);  
     scene.add(airGroup); 
 
-    CreateGroundEnemy();
-    CreatFlyerEnemy();
-    
+    level(currentLevel);
+}
+
+function level(number){
+    enemyLimit = number;
+    createEnemies()
 }
