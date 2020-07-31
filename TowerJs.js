@@ -7,7 +7,7 @@ airGroup = null,
 groundArray=[],
 airArray=[];
 
-var life = 100;
+var life = 20;
 var targetYPos = -15;
 var ystart = 10;
 var delta = 0.05;
@@ -53,10 +53,6 @@ function CreatFlyerEnemy(y){
 }
 
 function createEnemies(){
-    /*
-    console.log("curr: "+currentEnemies+ " limit: "+ enemyLimit);
-    console.log(currentEnemies < enemyLimit)
-    */
     for(currentEnemies;currentEnemies < enemyLimit; currentEnemies++){
         CreateGroundEnemy(currentEnemies); 
         CreatFlyerEnemy(currentEnemies*2);
@@ -96,12 +92,7 @@ function moveEnemy(enemy) {
             enemyWin(enemy);
             break;
         case 4:
-            if(currentEnemies == 0)
-           /* {   
-                currentLevel+=1
-                console.log("new level: " + currentLevel)
-                level(currentLevel);
-            }*/
+
             break;
     }
 }
@@ -110,16 +101,19 @@ function enemyWin(enemy){
     life--;
     enemy.position.y = 1;
     enemy.milestone = 4;
-    console.log(life);
     /*
     console.log(enemy);
     scene.remove(enemy);
     */
-   
-   currentEnemies-=1;
+   document.getElementById("status").innerHTML = "Lives: " + life;
 
-   /**/
-
+   currentEnemies-=.5;
+   if(currentEnemies == 0 && life> 0)
+   {   
+       currentLevel+=1
+       console.log("new level: " + currentLevel)
+       level(currentLevel);
+   }
 }
 
 function animate() 
@@ -181,6 +175,7 @@ function createScene(canvas)
 }
 
 function level(number){
+    document.getElementById("title").innerHTML = "Level: " + number;
     enemyLimit = number;
     createEnemies()
 }
