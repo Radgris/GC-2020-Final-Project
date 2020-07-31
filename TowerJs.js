@@ -29,7 +29,7 @@ var atargetedEnemy=0;
 var gtargetedEnemy=0;
 var levelLimit = 5;
 
-var enemyspeed = 0.02;
+var enemyspeed = 0.09;
 var enemyLimit = 5;
 
 var score = 0;
@@ -40,7 +40,7 @@ var loader = new THREE.GLTFLoader();
 function CreateGroundEnemy(y) {
     loader.load('/models/CesiumMan.gltf', function (obj) {
         obj.scene.rotation.x = Math.PI / 2;
-        obj.scene.position.set(4, y, 0);
+        obj.scene.position.set(Math.random()*4, y, 0);
         obj.scene.hitpoints = 1;
         obj.scene.milestone = 0;
         scene.add(obj.scene);
@@ -56,7 +56,7 @@ function CreatFlyerEnemy(y) {
     loader.load('/models/Duck.gltf', function (obj) {
         obj.scene.rotation.x = Math.PI / 2;
         obj.scene.rotation.y = -Math.PI / 2;
-        obj.scene.position.set(-3.5, y + 2, 3);
+        obj.scene.position.set(Math.random()*-3, y + 2, 3);
         obj.scene.hitpoints = 1;
         obj.scene.milestone = 0;
         scene.add(obj.scene);
