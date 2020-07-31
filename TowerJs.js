@@ -341,6 +341,16 @@ function createScene(canvas) {
     scene.add(towerGroup);
 
     level(currentLevel);
+
+    var backGeometry = new THREE.SphereGeometry(200, 50, 50);
+    var backMaterial = new THREE.MeshPhongMaterial({
+    map: new THREE.ImageUtils.loadTexture("/models/greengreen.png"),
+    side: THREE.DoubleSide,
+    shininess: 0
+});
+var backField = new THREE.Mesh(backGeometry, backMaterial);
+scene.add(backField);
+
 }
 
 function level(number) {
@@ -392,8 +402,7 @@ function createTurret(event) {
 
     }
 
-    console.log(mouse.x);
-    console.log(mouse.y);
+
 }
 
 
