@@ -213,15 +213,22 @@ function createTurret( event ) {
     Moontexture = new THREE.TextureLoader().load(MoontextureUrl);
     Moonmaterial = new THREE.MeshPhongMaterial({ map: Moontexture });
     
-    // Create the venus geometry
-    let geom = new THREE.SphereGeometry(1, 15, 15);
-    
-    // And put the geometry and material together into a mesh
-    let turr= new THREE.Mesh(geom, Moonmaterial);
+    switch(event.which){
+        case 1:
+        let geom = new THREE.SphereGeometry(1, 15, 15);
+        let turr= new THREE.Mesh(geom, Moonmaterial);
+        turr.position.set(mouse.x, mouse.y, 0);
+        towerGroup.add(turr);
+        break;
 
-    turr.position.set(mouse.x, mouse.y, 0);
+        case 3:
+        let g= new THREE.BoxGeometry(1.5, 1.5, 1.5);
+        let tur= new THREE.Mesh(g, Moonmaterial);
+        tur.position.set(mouse.x, mouse.y, 0);
+        towerGroup.add(tur);
+        break;
 
-    towerGroup.add(turr);
+    }
 
     console.log(mouse.x);
     console.log(mouse.y);
