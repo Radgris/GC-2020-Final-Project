@@ -40,7 +40,7 @@ var loader = new THREE.GLTFLoader();
 function CreateGroundEnemy(y) {
     loader.load('/models/CesiumMan.gltf', function (obj) {
         obj.scene.rotation.x = Math.PI / 2;
-        obj.scene.position.set(Math.random()*4, y, 0);
+        obj.scene.position.set(Math.random()*3, y, 0);
         obj.scene.hitpoints = 1;
         obj.scene.milestone = 0;
         scene.add(obj.scene);
@@ -56,7 +56,7 @@ function CreatFlyerEnemy(y) {
     loader.load('/models/Duck.gltf', function (obj) {
         obj.scene.rotation.x = Math.PI / 2;
         obj.scene.rotation.y = -Math.PI / 2;
-        obj.scene.position.set(Math.random()*-3, y + 2, 3);
+        obj.scene.position.set(-3.2, y + 2, 3);
         obj.scene.hitpoints = 1;
         obj.scene.milestone = 0;
         scene.add(obj.scene);
@@ -338,14 +338,17 @@ function createScene(canvas) {
     airGroup = new THREE.Object3D;
     groundGroup.position.set(5, 10, 0);
     airGroup.position.set(0, 10, 0);
-
-    geometry = new THREE.PlaneGeometry(15, 20, 15, 20);
-    var material = new THREE.MeshBasicMaterial({
-        color: 0xffff00,
+ 
+    var planeTexture = "/resources/images/path.jpg";
+    let texture = new THREE.TextureLoader().load(planeTexture);
+    let material = new THREE.MeshPhongMaterial({
+        map: texture,
         side: THREE.DoubleSide
     });
+    geometry = new THREE.PlaneGeometry(15, 20, 15, 20);
     var plane = new THREE.Mesh(geometry, material);
     plane.position.set(0, 0, 0);
+
     scene.add(plane);
     scene.add(groundGroup);
     scene.add(airGroup);
