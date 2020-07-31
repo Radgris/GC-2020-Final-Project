@@ -47,7 +47,7 @@ function CreatFlyerEnemy(y){
             airGroup.add(obj.scene);
             airArray.push(obj.scene);
             obj.scene = obj.scene.clone();
-            
+
     }, undefined, function ( error ) {
         console.error( error );
     });
@@ -64,44 +64,6 @@ function moveEnemies(array ) {
     } 
 
 }
-
-function createArenaGeometry( arena ){
-
-    this.arena = [];
-
-    for (var r = 0; r < arena.fullH; r++)
-    {
-        this.arena[r] = [];
-        
-        for (var c = 0; c < arena.fullW; c++)
-        {
-            var position = new THREE.Vector3(S_W * c, S_W * r, 0);
-            var material = new THREE.MeshBasicMaterial({
-                color: 0x003300
-            });
-            
-            if (! arena.fullToNormal([r, c]))
-            {
-                material.opacity = 0;
-            }
-            
-            var geom = new THREE.CubeGeometry(S_W, S_W, 0.001, 1, 1, 1);
-            var square = new THREE.Mesh(geom, material);
-            square.position = position;
-            
-            //var squareModel = Loader.get( 'square' );
-            //squareModel.position = position.clone();
-            //Geometry.scene.add( squareModel );
-            
-            // Location in game... null if outside buildable area
-            square.coord = arena.fullToNormal([r, c]);
-            square.fullCoord = [r, c];
-            
-            this.arena[r][c] = square;
-        }
-    }  
-}
-
 
 function moveEnemy(enemy) {
     switch(enemy.milestone){
@@ -136,7 +98,7 @@ function moveEnemy(enemy) {
 
 function enemyWin(enemy){
     life--;
-    enemy.position.y = 0;
+    enemy.position.y = 1;
     enemy.milestone=4;
     console.log(life);
 }
@@ -186,6 +148,43 @@ TOWER = {
         }
     ]   
 };
+
+function createArenaGeometry( arena ){
+
+    this.arena = [];
+
+    for (var r = 0; r < arena.fullH; r++)
+    {
+        this.arena[r] = [];
+        
+        for (var c = 0; c < arena.fullW; c++)
+        {
+            var position = new THREE.Vector3(S_W * c, S_W * r, 0);
+            var material = new THREE.MeshBasicMaterial({
+                color: 0x003300
+            });
+            
+            if (! arena.fullToNormal([r, c]))
+            {
+                material.opacity = 0;
+            }
+            
+            var geom = new THREE.CubeGeometry(S_W, S_W, 0.001, 1, 1, 1);
+            var square = new THREE.Mesh(geom, material);
+            square.position = position;
+            
+            //var squareModel = Loader.get( 'square' );
+            //squareModel.position = position.clone();
+            //Geometry.scene.add( squareModel );
+            
+            // Location in game... null if outside buildable area
+            square.coord = arena.fullToNormal([r, c]);
+            square.fullCoord = [r, c];
+            
+            this.arena[r][c] = square;
+        }
+    }  
+}
 
 function applyDamage ( arena, enemies, towers, delta )
 {
