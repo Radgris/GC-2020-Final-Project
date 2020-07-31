@@ -82,7 +82,7 @@ function moveEnemies(array) {
 
 function FireGroundTurret(array, enemy) {
     if (array[0] !== undefined) {
-        MoontextureUrl = "/models/Monster.jpg";
+        MoontextureUrl = "/models/CesiumMan_img0.jpg";
         Moontexture = new THREE.TextureLoader().load(MoontextureUrl);
         Moonmaterial = new THREE.MeshPhongMaterial({
             map: Moontexture
@@ -136,7 +136,7 @@ function movegroundProj(bult, enemy) {
 
 function FireAirTurret(array, enemy) {
     if (array[0] !== undefined) {
-        MoontextureUrl = "/models/Monster.jpg";
+        MoontextureUrl = "/models/CesiumMan_img0.jpg";
         Moontexture = new THREE.TextureLoader().load(MoontextureUrl);
         Moonmaterial = new THREE.MeshPhongMaterial({
             map: Moontexture
@@ -275,6 +275,7 @@ function animate() {
     airArray.forEach(element => {
         FireAirTurret(airturretArray, element);
     });
+
 }
 
 function run() {
@@ -310,6 +311,7 @@ function run() {
     orbitControls.keyPanSpeed = 0.05;
     orbitControls.maxZoom = 2.0;
     //orbitControls.dampingFactor = 0.99;
+
 
     animate();
 }
@@ -377,7 +379,7 @@ function createTurret(event) {
     mouse.y = ((event.clientY / canvas.height) * -2 + 1)*10 ;
 
 
-    MoontextureUrl = "/models/Monster.jpg";
+    MoontextureUrl = "/models/CesiumMan_img0.jpg";
     Moontexture = new THREE.TextureLoader().load(MoontextureUrl);
     Moonmaterial = new THREE.MeshPhongMaterial({
         map: Moontexture
