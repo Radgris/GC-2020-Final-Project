@@ -7,6 +7,11 @@ airGroup = null,
 groundArray=[],
 airArray=[];
 
+groundArray = [];
+airArray = [];
+var enemyspeed = 0.05;
+
+
 var targetYPos = -15;
 var ystart = 10;
 var delta = 0.05;
@@ -14,13 +19,12 @@ var enemyLimit = 5;
 var levelLimit = 5;
 
 
+
+var waypoints = [[1,1],[1,-1],[-1,-1],[-1,1]]
+
 var loader = new THREE.GLTFLoader();
-
-function CreateGroundEnemy(){
-
+function CreateGroundEnemy() {
     loader.load('/Proyecto final/models/CesiumMan.gltf', function ( obj ) {
-
-
             obj.scene.rotation.x = Math.PI / 2;
             obj.scene.position.set(0,0,0);
             obj.scene.hitpoints = 3;
@@ -71,7 +75,9 @@ function moveEnemies(array ) {
         }
     });
 
+    CreateGroundEnemy();  
 }
+
 function createArenaGeometry( arena ){
 
     this.arena = [];
@@ -106,16 +112,183 @@ function createArenaGeometry( arena ){
             
             this.arena[r][c] = square;
         }
-    }
-    
+    }  
 }
-function createProjectile ( arena, tower, enemy )
+
+function CreateGroundEnemy(){
+
+    loader.load('/Proyecto final/models/CesiumMan.gltf', function ( obj ) {
+
+        for(var i = 0; i < enemyLimit; i++){
+            scene.add( obj.scene );
+            obj.scene.rotation.x = Math.PI / 2;
+            obj.scene.position.set(0,0,0);
+            obj.scene.hitpoints = 3;
+            console.log(obj.scene.hitpoints);
+            groundGroup.add(obj.scene);
+        }
+    
+    }, undefined, function ( error ) {
+    
+        console.error( error );
+    
+    } );
+}
+
+function moveEnemy(enemy) {
+
+    switch(enemy.milestone){
+        case 0:
+            enemy.position.y-= enemyspeed
+            if(enemy.position.y <= -1)
+            {
+                enemy.milestone = 1;
+            }
+            break;
+        case 1:
+            enemy.position.x-= enemyspeed
+            if(enemy.position.x <= -1)
+            {
+                enemy.milestone = 2;
+            }
+            break;
+        case 2:
+            enemy.position.y+= enemyspeed
+            if(enemy.position.y > 1)
+            {
+                enemy.milestone = 3;
+            }
+            break;
+        case 3:
+            enemyWin(enemy);
+            break;
+    }
+}
+
+function enemyWin(enemy){
+    //enemy model must dissapear
+    //live count must lower
+}
+
+/**
+ * Creates an instance of Tower
+ *
+ * @constructor
+ * @this {Tower}
+ * @param {player} player The owner of this tower.
+ * @param {array} coord The coord of this tower in the arena.
+ * @param {string} type The type of this tower.
+ * @param {number} level The current level of this tower.
+ */
+function Tower( player, coord, type, level ){
+    
+    // Add all default values to this tower instance
+    _.defaults(this, TOWER[type][level]);
+    
+    this.type = type;
+    this.level = level;
+    this.coord = coord; // Coordinate on game board
+    
+    this.busy = 0;
+
+};
+
+// Default tower values
+TOWER = {  
+    GATTLING : [
+        {
+            name : 'Gatling Tower',
+            damage : 6,
+            range : 180,
+            cooldown : 1000, // Milliseconds?
+            cost : 5,
+            attack : 'gatling',
+        }
+    ],
+    MISSILE : [
+        {
+            damage : 70,
+            range : 300,
+            cooldown : 3000,
+            cost : 15,
+            attack : 'missile'
+        }
+    ]   
+};
+
+function applyDamage ( arena, enemies, towers, delta )
 {
     
+    for (var id in towers)
+    {
+        var tower = towers[id];
+        tower.busy = Math.max(tower.busy - delta, 0);
+            
+        for (var id in enemies )
+        {       
+            var enemy = enemies[id];
+        
+            if (! enemy)
+            {
+                continue;
+            }
+            
+            var coord = arena.normalToFull( tower.coord );
+            
+            var t = new THREE.Vector2( coord[1] * S_W,
+                                       coord[0] * S_W);
+            
+            var e = new THREE.Vector2( enemy[MESH].position.x,
+                                       enemy[MESH].position.y);
+            
+            var dist = e.distanceTo( t );
+            
+            // Minimum distance is (usually) 60, the size of a square.
+            if (dist < tower.range)
+            { 
+                if ('gattling' == tower.attack)
+                {
+                    var dir = new THREE.Vector2( t.x - e.x, t.y - e.y );
+                    dir.normalize();
+                    
+                    if (tower[TOP])
+                    {
+                        var theta = Math.atan( dir.y / dir.x );
+                        if (dir.x < 0)
+                        {  
+                            theta -= PI;   
+                        }     
+                        tower[TOP].rotation.z = theta;     
+                        enemy.damage( tower.damage );     
+                    }     
+                }
+                else if ('missile' == tower.attack)
+                { 
+                    var dir = new THREE.Vector2( t.x - e.x, t.y - e.y );
+                    dir.normalize();
+            
+                    if (tower[TOP])
+                    {
+                        var theta = Math.atan( dir.y / dir.x );
+                        if (dir.x < 0)
+                        {
+                            theta -= PI;
+                        }
+                        tower[TOP].rotation.z = theta;
+                        Geometry.createProjectile( arena, tower, enemy );  
+                    } 
+                }  
+                tower.busy = tower.cooldown;
+                break;  
+            }  
+        }      
+    }   
+}
+
+function createProjectile ( arena, tower, enemy )
+{  
     var f;
-    
     var speed = 0.2;
-    
     var damage = tower.damage;
 
     // Tower location
@@ -161,151 +334,14 @@ function createProjectile ( arena, tower, enemy )
             Geometry.createExplosion( target );
             Geometry.scene.remove( proj );
             Idle.remove( f );
-            enemy.damage( damage );
-            
+            enemy.damage( damage );      
         }
         else
-        {
-            
+        { 
             proj.position.x += dist.x;
-            proj.position.y += dist.y;
-            
-        }
-        
+            proj.position.y += dist.y; 
+        } 
     });
-    
-    // Start the missile near the tip of the turret
-    Idle.functions[f]( 180 );
-    
-}
-function applyDamage ( arena, enemies, towers, delta )
-{
-    
-    for (var id in towers)
-    {
-        var tower = towers[id];
-        tower.busy = Math.max(tower.busy - delta, 0);
-            
-        for (var id in enemies )
-        {
-                
-            var enemy = enemies[id];
-            
-            if (! enemy)
-            {
-                continue;
-            }
-            
-            var coord = arena.normalToFull( tower.coord );
-            
-            var t = new THREE.Vector2( coord[1] * S_W,
-                                       coord[0] * S_W);
-            
-            var e = new THREE.Vector2( enemy[MESH].position.x,
-                                       enemy[MESH].position.y);
-            
-            var dist = e.distanceTo( t );
-            
-            // Minimum distance is (usually) 60, the size of a square.
-            if (dist < tower.range)
-            {
-                
-                if ('gattling' == tower.attack)
-                {
-                    
-                    var dir = new THREE.Vector2( t.x - e.x, t.y - e.y );
-                    dir.normalize();
-                    
-                    if (tower[TOP])
-                    {
-                        var theta = Math.atan( dir.y / dir.x );
-                        
-                        if (dir.x < 0)
-                        {
-                            
-                            theta -= PI;
-                            
-                        }
-                        
-                        tower[TOP].rotation.z = theta;
-                        
-                        
-                        enemy.damage( tower.damage );
-                        
-                    }
-                    
-                }
-                else if ('missile' == tower.attack)
-                { 
-                    var dir = new THREE.Vector2( t.x - e.x, t.y - e.y );
-                    dir.normalize();
-                    
-                    if (tower[TOP])
-                    {
-                        var theta = Math.atan( dir.y / dir.x );
-                        if (dir.x < 0)
-                        {
-                            
-                            theta -= PI;
-                            
-                        }
-                        tower[TOP].rotation.z = theta;
-                        Geometry.createProjectile( arena, tower, enemy );  
-                    } 
-                }  
-                tower.busy = tower.cooldown;
-                break;  
-            }  
-        }      
-    }   
-}
-/**
- * Creates an instance of Tower
- *
- * @constructor
- * @this {Tower}
- * @param {player} player The owner of this tower.
- * @param {array} coord The coord of this tower in the arena.
- * @param {string} type The type of this tower.
- * @param {number} level The current level of this tower.
- */
-function Tower( player, coord, type, level ){
-    
-    // Add all default values to this tower instance
-    _.defaults(this, TOWER[type][level]);
-    
-    this.type = type;
-    this.level = level;
-    this.coord = coord; // Coordinate on game board
-    
-    this.busy = 0;
-
-};
-
-// Default tower values
-TOWER = {
-    
-    GATTLING : [
-        {
-            name : 'Gatling Tower',
-            damage : 6,
-            range : 180,
-            cooldown : 1000, // Milliseconds?
-            cost : 5,
-            attack : 'gatling',
-        }
-
-    ],
-    
-    MISSILE : [
-        {
-            damage : 70,
-            range : 300,
-            cooldown : 3000,
-            cost : 15,
-            attack : 'missile'
-        }
-    ]
     
 };
 
@@ -324,23 +360,6 @@ function animate()
 function run() {
     requestAnimationFrame(function() { run(); });
     
-    // Render the scene
-    renderer.render( scene, camera );
-    var orbitControls = new THREE.OrbitControls( camera, renderer.domElement );
-    orbitControls.enabled = true;
-    orbitControls.enableZoom = true;
-    orbitControls.enablePan = true;
-    //orbitControls.enableDamping = true;
-    orbitControls.autoRotate = false;
-    orbitControls.enableKeys = true;
-    orbitControls.panSpeed=0.005;
-    orbitControls.zoomSpeed=0.005;
-    orbitControls.rotateSpeed=0.005;
-    orbitControls.keyPanSpeed=0.05;
-    orbitControls.maxZoom = 2.0;
-    //orbitControls.dampingFactor = 0.99;
-
-    animate();
 }
 
 function createScene(canvas)
