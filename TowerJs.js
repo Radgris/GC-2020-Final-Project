@@ -41,7 +41,6 @@ function CreateGroundEnemy(y) {
     loader.load('/models/CesiumMan.gltf', function (obj) {
         obj.scene.rotation.x = Math.PI / 2;
         obj.scene.position.set(Math.random()*3, y, 0);
-        obj.scene.hitpoints = 1;
         obj.scene.milestone = 0;
         scene.add(obj.scene);
         //groundGroup.add(obj.scene);
@@ -57,7 +56,6 @@ function CreatFlyerEnemy(y) {
         obj.scene.rotation.x = Math.PI / 2;
         obj.scene.rotation.y = -Math.PI / 2;
         obj.scene.position.set(-3.2, y + 2, 3);
-        obj.scene.hitpoints = 1;
         obj.scene.milestone = 0;
         scene.add(obj.scene);
         //airGroup.add(obj.scene);
@@ -323,11 +321,11 @@ function createScene(canvas) {
     });
     renderer.setSize(canvas.width, canvas.height);
     scene = new THREE.Scene();
-    scene.background = new THREE.Color(0.0, 0.0, 0.0);
+    scene.background = new THREE.Color(1.0, 1.0, 0.5);
     camera = new THREE.PerspectiveCamera(45, canvas.width / canvas.height, 1, 4000);
     camera.position.z = 24;
     scene.add(camera);
-    let light = new THREE.PointLight(0xffffff, 1.0, 100000);
+    let light = new THREE.AmbientLight(0xffffff, 1.0, 100000);
     light.position.set(0, 0, 0);
     scene.add(light);
     let ambientLight = new THREE.AmbientLight(0xffccaa, 0.2);
@@ -371,12 +369,12 @@ var raycaster = new THREE.Raycaster();
 var mouse = new THREE.Vector2();
 
 function createTurret(event) {
-
+    let canvas = document.getElementById("webglcanvas");
     // calculate mouse position in normalized device coordinates
     // (-1 to +1) for both components
 
-    mouse.x = ((event.clientX / window.innerWidth) * 2 - 1) * 10;
-    mouse.y = -((event.clientY / window.innerHeight) * 2 + 1) * 2.5;
+    mouse.x = ((event.clientX / canvas.width) * 2 - 1)*15;
+    mouse.y = ((event.clientY / canvas.height) * -2 + 1)*10 ;
 
 
     MoontextureUrl = "/models/Monster.jpg";
