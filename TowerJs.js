@@ -118,7 +118,6 @@ function movegroundProj(bult, enemy) {
     if (bult.position.y > enemy.position.y) {
         bult.position.y -= 0.05;
     }
-    //console.log("bullet: "+ bult.position.y+" enemy: "+ enemy.position.y)
     if (bult.position.x > enemy.position.x - .051 && bult.position.x < enemy.position.x + .051 &&
         bult.position.y > enemy.position.y - .051 && bult.position.y < enemy.position.y + .051) {
 
@@ -126,7 +125,6 @@ function movegroundProj(bult, enemy) {
         enemyLoose(enemy, groundArray);
         bult.position.set(-100, -100);
         enemy.position.set(100,1000,10000);
-        //gtargetedEnemy++;
         if(groundArray.length==gtargetedEnemy){
             gtargetedEnemy = 0;
         }
@@ -181,12 +179,10 @@ function moveairProj(bul, enemy) {
     if (bul.position.x > enemy.position.x - .051 && bul.position.x < enemy.position.x + .051 &&
         bul.position.y > enemy.position.y - .051 && bul.position.y < enemy.position.y + .051) {
 
-        console.log("true")
         scene.remove(bul);
         enemyLoose(enemy, airArray);
         bul.position.set(-100, -100);
         enemy.position.set(100,1000,10000);
-        //atargetedEnemy++;
         if(airArray.length == atargetedEnemy){
             atargetedEnemy = 0;
         }
