@@ -3,7 +3,9 @@ scene = null,
 camera = null,
 towerGroup = null,
 groundGroup = null,
-airGroup = null;
+airGroup = null,
+groundArray=[],
+airArray=[];
 
 var targetYPos = -15;
 var ystart = 10;
@@ -25,6 +27,7 @@ function CreateGroundEnemy(){
             obj.scene.hitpoints = 3;
             console.log(obj.scene.hitpoints);
             groundGroup.add(obj.scene);
+            groundArray.push(obj.scene);
         }
     
     }, undefined, function ( error ) {
@@ -46,6 +49,7 @@ function CreatFlyerEnemy(){
             obj.scene.hitpoints = 3;
             console.log(obj.scene.hitpoints);
             airGroup.add(obj.scene);
+            airArray.push(obj.scene);
         }
     
     }, undefined, function ( error ) {
@@ -56,10 +60,11 @@ function CreatFlyerEnemy(){
 }
 
 function moveEnemies(array ) {
-
-   
-    array.prototype.forEach.call(element => {
-        element.translateZ(0.05);
+    array.forEach(element => {
+        element.position.y-=0.05;
+        if(element.position.y <= targetYPos){
+            console.log("lose");
+        }
     });
 
 }
@@ -302,9 +307,10 @@ TOWER = {
 
 function animate() 
 {
-   if(groundGroup.position.y >= targetYPos){
-       groundGroup.position.y -=0.05;
-   }
+
+    moveEnemies(groundArray);
+    moveEnemies(airArray);
+
    
 
 
