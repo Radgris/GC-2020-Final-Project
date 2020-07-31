@@ -18,13 +18,9 @@ var currentEnemies=0;
 var enemyLimit = 5;
 var levelLimit = 5;
 
-
-
-//var waypoints = [[5,5],[1,-1],[-1,-1],[-1,1]]
-
 var loader = new THREE.GLTFLoader();
 function CreateGroundEnemy(y) {
-    loader.load('/Proyecto final/models/CesiumMan.gltf', function ( obj ) {
+    loader.load('/models/CesiumMan.gltf', function ( obj ) {
             obj.scene.rotation.x = Math.PI / 2;
             obj.scene.position.set(0,y,0);
             obj.scene.hitpoints = 3;
@@ -32,20 +28,15 @@ function CreateGroundEnemy(y) {
             scene.add( obj.scene );
             groundGroup.add(obj.scene);
             groundArray.push(obj.scene);
-
-
-    
     
     }, undefined, function ( error ) {
-    
         console.error( error );
-    
-    } );
+    });
 }
 
 function CreatFlyerEnemy(y){
 
-    loader.load('/Proyecto final/models/Duck.gltf', function ( obj ) {
+    loader.load('/models/Duck.gltf', function ( obj ) {
 
             obj.scene.rotation.x = Math.PI / 2;
             obj.scene.rotation.y = -Math.PI / 2;
@@ -56,18 +47,14 @@ function CreatFlyerEnemy(y){
             airGroup.add(obj.scene);
             airArray.push(obj.scene);
             obj.scene = obj.scene.clone();
-        
-    
+            
     }, undefined, function ( error ) {
-    
         console.error( error );
-    
-    } );
+    });
 }
 
 function moveEnemies(array ) {
     array.forEach(element => {
-        //element.position.y-=0.05;
         moveEnemy(element);
     });
     if(currentEnemies < enemyLimit){
@@ -117,7 +104,6 @@ function createArenaGeometry( arena ){
 
 
 function moveEnemy(enemy) {
-
     switch(enemy.milestone){
         case 0:
             enemy.position.y -= enemyspeed;
@@ -149,9 +135,6 @@ function moveEnemy(enemy) {
 }
 
 function enemyWin(enemy){
-    //enemy model must dissapear
-    //live count must lower
-    //console.log("win");
     life--;
     enemy.position.y = 0;
     enemy.milestone=4;
@@ -335,14 +318,8 @@ function createProjectile ( arena, tower, enemy )
 
 function animate() 
 {
-
     moveEnemies(groundArray);
-    moveEnemies(airArray);
-
-   
-
-
-   
+    moveEnemies(airArray);  
 }
 
 function run() {
@@ -368,36 +345,16 @@ function run() {
 
 function createScene(canvas)
 {    
-    // Create the Three.js renderer and attach it to our canvas
     renderer = new THREE.WebGLRenderer( { canvas: canvas, antialias: true } );
-
-    // Set the viewport size
     renderer.setSize(canvas.width, canvas.height);
-    
-    // Create a new Three.js scene
     scene = new THREE.Scene();
-
-    // Set the background color 
     scene.background = new THREE.Color( 0.0, 0.0, 0.0 );
-    // scene.background = new THREE.Color( "rgb(100, 100, 100)" );
-
-    // Add  a camera so we can view the scene
     camera = new THREE.PerspectiveCamera( 45, canvas.width / canvas.height, 1, 4000 );
     camera.position.z = 24;
     scene.add(camera);
-
-    // Create a group to hold all the objects
-    groundGroup = new THREE.Object3D;
-    
-    // Add a directional light to show off the objects
     let light = new THREE.PointLight( 0xffffff, 1.0, 100000);
-    // let light = new THREE.DirectionalLight( "rgb(255, 255, 100)", 1.5);
-
-    // Position the light out from the scene, pointing at the origin
     light.position.set(0, 0, 0);
-    //light.target.position.set(0,-2,0);
     scene.add(light);
-
     let ambientLight = new THREE.AmbientLight(0xffccaa, 0.2);
     scene.add(ambientLight);
 
@@ -407,7 +364,6 @@ function createScene(canvas)
     groundGroup.position.set(5,10,0);
     airGroup.position.set(0,10,0);
 
-    
     geometry = new THREE.PlaneGeometry( 15, 20, 15, 20 );
     var material = new THREE.MeshBasicMaterial( {color: 0xffff00, side: THREE.DoubleSide} );
     var plane = new THREE.Mesh( geometry, material );
@@ -416,10 +372,7 @@ function createScene(canvas)
     scene.add(groundGroup);  
     scene.add(airGroup); 
 
-
     CreateGroundEnemy();
     CreatFlyerEnemy();
-    
-    
     
 }
