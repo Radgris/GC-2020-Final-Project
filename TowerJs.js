@@ -276,7 +276,7 @@ function animate() {
 
 function run() {
 
-
+    if(life > 0) {
     // update the picking ray with the camera and mouse position
     raycaster.setFromCamera(mouse, camera);
 
@@ -285,7 +285,7 @@ function run() {
 
     for (var i = 0; i < intersects.length; i++) {
 
-        intersects[i].object.material.color.set(0xff0000);
+        intersects[i].object.material.color.set(0xffffff);
 
     }
 
@@ -310,6 +310,9 @@ function run() {
 
 
     animate();
+    } else {
+        document.getElementById("title").innerHTML = "Level: GAME OVER";
+    }
 }
 
 function createScene(canvas) {
