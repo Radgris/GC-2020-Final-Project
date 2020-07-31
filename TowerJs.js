@@ -45,7 +45,7 @@ function CreatFlyerEnemy(y){
             scene.add( obj.scene );
             airGroup.add(obj.scene);
             airArray.push(obj.scene);
-            obj.scene = obj.scene.clone();
+            //obj.scene = obj.scene.clone();
 
     }, undefined, function ( error ) {
         console.error( error );
@@ -68,6 +68,8 @@ function moveEnemies(array ) {
         moveEnemy(element);
     });
 }
+
+
 
 function moveEnemy(enemy) {
     switch(enemy.milestone){
@@ -97,11 +99,11 @@ function moveEnemy(enemy) {
             break;
         case 4:
             if(currentEnemies == 0)
-           /* {   
-                currentLevel+=1
-                console.log("new level: " + currentLevel)
+           {   
+                currentLevel+=1;
+                console.log("new level: " + currentLevel);
                 level(currentLevel);
-            }*/
+            }
             break;
     }
 }
@@ -110,13 +112,14 @@ function enemyWin(enemy){
     life--;
     enemy.position.y = 1;
     enemy.milestone = 4;
+    currentEnemies-=0.5;
     console.log(life);
     /*
     console.log(enemy);
     scene.remove(enemy);
     */
    
-   currentEnemies-=1;
+
 
    /**/
 
@@ -129,6 +132,21 @@ function animate()
 }
 
 function run() {
+
+
+	// update the picking ray with the camera and mouse position
+	raycaster.setFromCamera( mouse, camera );
+
+	// calculate objects intersecting the picking ray
+	var intersects = raycaster.intersectObjects( scene.children );
+
+	for ( var i = 0; i < intersects.length; i++ ) {
+
+		intersects[ i ].object.material.color.set( 0xff0000 );
+
+	}
+
+
     requestAnimationFrame(function() { run(); });
     renderer.render( scene, camera );
     var orbitControls = new THREE.OrbitControls( camera, renderer.domElement );
@@ -176,11 +194,45 @@ function createScene(canvas)
     scene.add( plane );     
     scene.add(groundGroup);  
     scene.add(airGroup); 
+    scene.add(towerGroup);
 
     level(currentLevel);
 }
 
 function level(number){
     enemyLimit = number;
-    createEnemies()
+    createEnemies();
 }
+
+var raycaster = new THREE.Raycaster();
+var mouse = new THREE.Vector2();
+
+function createTurret( event ) {
+
+	// calculate mouse position in normalized device coordinates
+	// (-1 to +1) for both components
+
+	mouse.x = (( event.clientX / window.innerWidth ) * 2 - 1)*12;
+    mouse.y = - (( event.clientY / window.innerHeight ) * 2 + 1)*2;
+    
+
+    MoontextureUrl = "/models/Monster.jpg";
+    Moontexture = new THREE.TextureLoader().load(MoontextureUrl);
+    Moonmaterial = new THREE.MeshPhongMaterial({ map: Moontexture });
+    
+    // Create the venus geometry
+    let geom = new THREE.SphereGeometry(1, 15, 15);
+    
+    // And put the geometry and material together into a mesh
+    let turr= new THREE.Mesh(geom, Moonmaterial);
+
+    turr.position.set(mouse.x, mouse.y, 0);
+
+    towerGroup.add(turr);
+
+    console.log(mouse.x);
+    console.log(mouse.y);
+}
+
+
+window.addEventListener( 'mousedown', createTurret, false );
