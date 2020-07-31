@@ -29,7 +29,7 @@ var atargetedEnemy=0;
 var gtargetedEnemy=0;
 var levelLimit = 5;
 
-var enemyspeed = 0.09;
+var enemyspeed = 0.15;
 var enemyLimit = 5;
 
 var score = 0;
@@ -41,7 +41,6 @@ function CreateGroundEnemy(y) {
     loader.load('/models/CesiumMan.gltf', function (obj) {
         obj.scene.rotation.x = Math.PI / 2;
         obj.scene.position.set(Math.random()*3, y, 0);
-        obj.scene.hitpoints = 1;
         obj.scene.milestone = 0;
         scene.add(obj.scene);
         //groundGroup.add(obj.scene);
@@ -57,7 +56,6 @@ function CreatFlyerEnemy(y) {
         obj.scene.rotation.x = Math.PI / 2;
         obj.scene.rotation.y = -Math.PI / 2;
         obj.scene.position.set(-3.2, y + 2, 3);
-        obj.scene.hitpoints = 1;
         obj.scene.milestone = 0;
         scene.add(obj.scene);
         //airGroup.add(obj.scene);
@@ -84,7 +82,7 @@ function moveEnemies(array) {
 
 function FireGroundTurret(array, enemy) {
     if (array[0] !== undefined) {
-        MoontextureUrl = "/models/Monster.jpg";
+        MoontextureUrl = "/models/CesiumMan_img0.jpg";
         Moontexture = new THREE.TextureLoader().load(MoontextureUrl);
         Moonmaterial = new THREE.MeshPhongMaterial({
             map: Moontexture
@@ -120,7 +118,6 @@ function movegroundProj(bult, enemy) {
     if (bult.position.y > enemy.position.y) {
         bult.position.y -= 0.05;
     }
-    //console.log("bullet: "+ bult.position.y+" enemy: "+ enemy.position.y)
     if (bult.position.x > enemy.position.x - .051 && bult.position.x < enemy.position.x + .051 &&
         bult.position.y > enemy.position.y - .051 && bult.position.y < enemy.position.y + .051) {
 
@@ -128,7 +125,6 @@ function movegroundProj(bult, enemy) {
         enemyLoose(enemy, groundArray);
         bult.position.set(-100, -100);
         enemy.position.set(100,1000,10000);
-        //gtargetedEnemy++;
         if(groundArray.length==gtargetedEnemy){
             gtargetedEnemy = 0;
         }
@@ -138,7 +134,7 @@ function movegroundProj(bult, enemy) {
 
 function FireAirTurret(array, enemy) {
     if (array[0] !== undefined) {
-        MoontextureUrl = "/models/Monster.jpg";
+        MoontextureUrl = "/models/CesiumMan_img0.jpg";
         Moontexture = new THREE.TextureLoader().load(MoontextureUrl);
         Moonmaterial = new THREE.MeshPhongMaterial({
             map: Moontexture
@@ -183,12 +179,10 @@ function moveairProj(bul, enemy) {
     if (bul.position.x > enemy.position.x - .051 && bul.position.x < enemy.position.x + .051 &&
         bul.position.y > enemy.position.y - .051 && bul.position.y < enemy.position.y + .051) {
 
-        console.log("true")
         scene.remove(bul);
         enemyLoose(enemy, airArray);
         bul.position.set(-100, -100);
         enemy.position.set(100,1000,10000);
-        //atargetedEnemy++;
         if(airArray.length == atargetedEnemy){
             atargetedEnemy = 0;
         }
@@ -277,11 +271,12 @@ function animate() {
     airArray.forEach(element => {
         FireAirTurret(airturretArray, element);
     });
+
 }
 
 function run() {
 
-
+    if(life > 0) {
     // update the picking ray with the camera and mouse position
     raycaster.setFromCamera(mouse, camera);
 
@@ -290,7 +285,7 @@ function run() {
 
     for (var i = 0; i < intersects.length; i++) {
 
-        intersects[i].object.material.color.set(0xff0000);
+        intersects[i].object.material.color.set(0xffffff);
 
     }
 
@@ -299,21 +294,12 @@ function run() {
         run();
     });
     renderer.render(scene, camera);
-    var orbitControls = new THREE.OrbitControls(camera, renderer.domElement);
-    orbitControls.enabled = true;
-    orbitControls.enableZoom = true;
-    orbitControls.enablePan = true;
-    //orbitControls.enableDamping = true;
-    orbitControls.autoRotate = false;
-    orbitControls.enableKeys = true;
-    orbitControls.panSpeed = 0.005;
-    orbitControls.zoomSpeed = 0.005;
-    orbitControls.rotateSpeed = 0.005;
-    orbitControls.keyPanSpeed = 0.05;
-    orbitControls.maxZoom = 2.0;
-    //orbitControls.dampingFactor = 0.99;
+
 
     animate();
+    } else {
+        document.getElementById("title").innerHTML = "Level: GAME OVER";
+    }
 }
 
 function createScene(canvas) {
@@ -323,11 +309,11 @@ function createScene(canvas) {
     });
     renderer.setSize(canvas.width, canvas.height);
     scene = new THREE.Scene();
-    scene.background = new THREE.Color(0.0, 0.0, 0.0);
+    scene.background = new THREE.Color(1.0, 1.0, 0.5);
     camera = new THREE.PerspectiveCamera(45, canvas.width / canvas.height, 1, 4000);
     camera.position.z = 24;
     scene.add(camera);
-    let light = new THREE.PointLight(0xffffff, 1.0, 100000);
+    let light = new THREE.AmbientLight(0xffffff, 1.0, 100000);
     light.position.set(0, 0, 0);
     scene.add(light);
     let ambientLight = new THREE.AmbientLight(0xffccaa, 0.2);
@@ -355,6 +341,16 @@ function createScene(canvas) {
     scene.add(towerGroup);
 
     level(currentLevel);
+
+    var backGeometry = new THREE.SphereGeometry(200, 50, 50);
+    var backMaterial = new THREE.MeshPhongMaterial({
+    map: new THREE.ImageUtils.loadTexture("/models/greengreen.png"),
+    side: THREE.DoubleSide,
+    shininess: 0
+});
+var backField = new THREE.Mesh(backGeometry, backMaterial);
+scene.add(backField);
+
 }
 
 function level(number) {
@@ -371,15 +367,15 @@ var raycaster = new THREE.Raycaster();
 var mouse = new THREE.Vector2();
 
 function createTurret(event) {
-
+    let canvas = document.getElementById("webglcanvas");
     // calculate mouse position in normalized device coordinates
     // (-1 to +1) for both components
 
-    mouse.x = ((event.clientX / window.innerWidth) * 2 - 1) * 10;
-    mouse.y = -((event.clientY / window.innerHeight) * 2 + 1) * 2.5;
+    mouse.x = ((event.clientX / canvas.width) * 2 - 1)*15;
+    mouse.y = ((event.clientY / canvas.height) * -2 + 1)*10 ;
 
 
-    MoontextureUrl = "/models/Monster.jpg";
+    MoontextureUrl = "/models/CesiumMan_img0.jpg";
     Moontexture = new THREE.TextureLoader().load(MoontextureUrl);
     Moonmaterial = new THREE.MeshPhongMaterial({
         map: Moontexture
@@ -406,8 +402,7 @@ function createTurret(event) {
 
     }
 
-    console.log(mouse.x);
-    console.log(mouse.y);
+
 }
 
 

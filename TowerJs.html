@@ -21,7 +21,9 @@
 			function () {
 				let canvas = document.getElementById("webglcanvas");
 				createScene(canvas);
-				run();
+				document.getElementById("inst").innerHTML = "		Press any key to start" ;
+				window.addEventListener('keydown', run, false);
+				//run();run
 			}
 		);
 	</script>
@@ -33,14 +35,19 @@
 		<canvas id="webglcanvas" width=1600 height=900></canvas>
 		<div id="title">
 			Level: 0
+
 		</div>
 		<div id="prompt">
 			Score: 0
+		</div>
+		<div id="inst"> 
+			Press any key to start
 		</div>
 		</div>
 		<div id="status"> 
 			Lives: 20
 		</div>
+
 	</div>
 
 </body>
