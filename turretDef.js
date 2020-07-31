@@ -34,6 +34,27 @@ function CreateGroundEnemy(){
     } );
 }
 
+function CreatFlyerEnemy(){
+
+    loader.load('/Proyecto final/models/Duck.gltf', function ( obj ) {
+
+        for(var i = 0; i < enemyLimit; i++){
+            scene.add( obj.scene );
+            obj.scene.rotation.x = Math.PI / 2;
+            obj.scene.rotation.y = -Math.PI / 2;
+            obj.scene.position.set(0,0,3);
+            obj.scene.hitpoints = 3;
+            console.log(obj.scene.hitpoints);
+            airGroup.add(obj.scene);
+        }
+    
+    }, undefined, function ( error ) {
+    
+        console.error( error );
+    
+    } );
+}
+
 function moveEnemies(array ) {
 
    
@@ -349,7 +370,9 @@ function createScene(canvas)
 
     towerGroup = new THREE.Object3D;
     groundGroup = new THREE.Object3D;
+    airGroup = new THREE.Object3D;
     groundGroup.position.set(5,10,0);
+    airGroup.position.set(-5,10,0);
 
     
     geometry = new THREE.PlaneGeometry( 15, 20, 15, 20 );
@@ -357,9 +380,11 @@ function createScene(canvas)
     var plane = new THREE.Mesh( geometry, material );
     plane.position.set(0,0,0);
     scene.add( plane );     
-    scene.add(groundGroup);   
+    scene.add(groundGroup);  
+    scene.add(airGroup); 
 
     CreateGroundEnemy();
+    CreatFlyerEnemy();
     
     
 }
