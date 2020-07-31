@@ -1,336 +1,409 @@
-let renderer = null, 
-scene = null, 
-camera = null,
-towerGroup = null,
-groundGroup = null,
-airGroup = null;
+let renderer = null,
+    scene = null,
+    camera = null,
+    towerGroup = null,
+    groundGroup = null,
+    airGroup = null,
+    bult = null,
+    bul = null,
 
-groundArray = [];
-airArray = [];
-var enemyspeed = 0.05;
+    groundArray = [],
+    airArray = [],
+    airturretArray = [],
+    groundturretArray = [];
 
-
+var life = 20;
 var targetYPos = -15;
 var ystart = 10;
 var delta = 0.05;
-var enemyLimit = 5;
+var currentLevel = 1;
+var currentEnemies = 0;
+
+var gbulletfired = 0;
+var gbulletMax = 1;
+
+var abulletfired = 0;
+var abulletMax = 1;
+
+var atargetedEnemy=0;
+var gtargetedEnemy=0;
 var levelLimit = 5;
 
+var enemyspeed = 0.15;
+var enemyLimit = 5;
 
+var score = 0;
 
-var waypoints = [[1,1],[1,-1],[-1,-1],[-1,1]]
 
 var loader = new THREE.GLTFLoader();
 
-function animate() 
-{
-    groundArray.forEach(enemy => {
-        moveEnemy(enemy)
+function CreateGroundEnemy(y) {
+    loader.load('/models/CesiumMan.gltf', function (obj) {
+        obj.scene.rotation.x = Math.PI / 2;
+        obj.scene.position.set(Math.random()*3, y, 0);
+        obj.scene.milestone = 0;
+        scene.add(obj.scene);
+        //groundGroup.add(obj.scene);
+        groundArray.push(obj.scene);
+
+    }, undefined, function (error) {
+        console.error(error);
     });
 }
 
-function run() {
-    requestAnimationFrame(function() { run(); });
-    
-    // Render the scene
-    renderer.render( scene, camera );
-    animate();
+function CreatFlyerEnemy(y) {
+    loader.load('/models/Duck.gltf', function (obj) {
+        obj.scene.rotation.x = Math.PI / 2;
+        obj.scene.rotation.y = -Math.PI / 2;
+        obj.scene.position.set(-3.2, y + 2, 3);
+        obj.scene.milestone = 0;
+        scene.add(obj.scene);
+        //airGroup.add(obj.scene);
+        airArray.push(obj.scene);
+        //obj.scene = obj.scene.clone();
+
+    }, undefined, function (error) {
+        console.error(error);
+    });
 }
 
-function createScene(canvas)
-{    
-    renderer = new THREE.WebGLRenderer( { canvas: canvas, antialias: true } );
-    renderer.setSize(canvas.width, canvas.height);
-    scene = new THREE.Scene();
-    scene.background = new THREE.Color( 0.0, 0.0, 0.0 );
-    camera = new THREE.PerspectiveCamera( 45, canvas.width / canvas.height, 1, 4000 );
-    camera.position.z = 20;
-    scene.add(camera);
-    let light = new THREE.PointLight( 0xffffff, 1.0, 100000);
-    light.position.set(0, 0, 0);
-    scene.add(light);
-    let ambientLight = new THREE.AmbientLight(0xffccaa, 0.2);
-    scene.add(ambientLight);
-    geometry = new THREE.PlaneGeometry( 15, 20, 15, 20 );
-    var material = new THREE.MeshBasicMaterial( {color: 0xffff00, side: THREE.DoubleSide} );
-    var plane = new THREE.Mesh( geometry, material );
-    plane.position.set(0,0,0);
-    scene.add( plane );     
-    scene.add(groundGroup);   
-    
-    towerGroup = new THREE.Object3D;
-    groundGroup = new THREE.Object3D;
-    groundGroup.position.set(5,10,0);
-
-    CreateGroundEnemy();  
+function createEnemies() {
+    for (currentEnemies; currentEnemies < enemyLimit; currentEnemies++) {
+        CreateGroundEnemy(10 + currentEnemies);
+        CreatFlyerEnemy(10 + currentEnemies * 2);
+    };
 }
 
-function createArenaGeometry( arena ){
+function moveEnemies(array) {
+    array.forEach(element => {
+        moveEnemy(element);
+    });
+}
 
-    this.arena = [];
-
-    for (var r = 0; r < arena.fullH; r++)
-    {
-        this.arena[r] = [];
-        
-        for (var c = 0; c < arena.fullW; c++)
-        {
-            var position = new THREE.Vector3(S_W * c, S_W * r, 0);
-            var material = new THREE.MeshBasicMaterial({
-                color: 0x003300
-            });
-            
-            if (! arena.fullToNormal([r, c]))
-            {
-                material.opacity = 0;
+function FireGroundTurret(array, enemy) {
+    if (array[0] !== undefined) {
+        MoontextureUrl = "/models/CesiumMan_img0.jpg";
+        Moontexture = new THREE.TextureLoader().load(MoontextureUrl);
+        Moonmaterial = new THREE.MeshPhongMaterial({
+            map: Moontexture
+        });
+        for (var i = 0; i < array.length; i += 2) {
+            if (gbulletfired < gbulletMax) {
+                let bullet = new THREE.SphereGeometry(.1, 15, 15);
+                bult = new THREE.Mesh(bullet, Moonmaterial);
+                bult.position.set(array[i], array[i + 1], 0);
+                scene.add(bult);
+                //groundGroup.add(bult);
             }
-            
-            var geom = new THREE.CubeGeometry(S_W, S_W, 0.001, 1, 1, 1);
-            var square = new THREE.Mesh(geom, material);
-            square.position = position;
-            
-            //var squareModel = Loader.get( 'square' );
-            //squareModel.position = position.clone();
-            //Geometry.scene.add( squareModel );
-            
-            // Location in game... null if outside buildable area
-            square.coord = arena.fullToNormal([r, c]);
-            square.fullCoord = [r, c];
-            
-            this.arena[r][c] = square;
         }
-    }  
+        gbulletfired = 1;
+
+        movegroundProj(bult, groundArray[gtargetedEnemy]);
+    }
+
+
 }
 
-function CreateGroundEnemy(){
+function movegroundProj(bult, enemy) {
 
-    loader.load('/Proyecto final/models/CesiumMan.gltf', function ( obj ) {
+    if (bult.position.x < enemy.position.x) {
+        bult.position.x += 0.05;
+    }
+    if (bult.position.x > enemy.position.x) {
+        bult.position.x -= 0.05;
+    }
+    if (bult.position.y < enemy.position.y) {
+        bult.position.y += 0.05;
+    }
+    if (bult.position.y > enemy.position.y) {
+        bult.position.y -= 0.05;
+    }
+    if (bult.position.x > enemy.position.x - .051 && bult.position.x < enemy.position.x + .051 &&
+        bult.position.y > enemy.position.y - .051 && bult.position.y < enemy.position.y + .051) {
 
-        for(var i = 0; i < enemyLimit; i++){
-            scene.add( obj.scene );
-            obj.scene.rotation.x = Math.PI / 2;
-            obj.scene.position.set(0,0,0);
-            obj.scene.hitpoints = 3;
-            console.log(obj.scene.hitpoints);
-            groundGroup.add(obj.scene);
+        scene.remove(bult);
+        enemyLoose(enemy, groundArray);
+        bult.position.set(-100, -100);
+        enemy.position.set(100,1000,10000);
+        if(groundArray.length==gtargetedEnemy){
+            gtargetedEnemy = 0;
         }
-    
-    }, undefined, function ( error ) {
-    
-        console.error( error );
-    
-    } );
+        gbulletfired = 0;
+    }
 }
+
+function FireAirTurret(array, enemy) {
+    if (array[0] !== undefined) {
+        MoontextureUrl = "/models/CesiumMan_img0.jpg";
+        Moontexture = new THREE.TextureLoader().load(MoontextureUrl);
+        Moonmaterial = new THREE.MeshPhongMaterial({
+            map: Moontexture
+        });
+
+        for (var i = 0; i < array.length; i += 2) {
+            if (abulletfired < abulletMax) {
+                let bulle = new THREE.BoxGeometry(.1, .1, .1);
+                bul = new THREE.Mesh(bulle, Moonmaterial);
+                bul.position.set(array[i], array[i + 1], 0);
+                scene.add(bul);
+                //towerGroup.add(bul);
+            }
+        }
+        abulletfired = 1;
+
+        moveairProj(bul, airArray[atargetedEnemy]);
+    }
+
+}
+
+function moveairProj(bul, enemy) {
+    if (bul.position.x < enemy.position.x) {
+        bul.position.x += 0.05;
+    }
+    if (bul.position.x > enemy.position.x) {
+        bul.position.x -= 0.05;
+    }
+    if (bul.position.y < enemy.position.y) {
+        bul.position.y += 0.05;
+    }
+    if (bul.position.y > enemy.position.y) {
+        bul.position.y -= 0.05;
+    }
+    if (bul.position.z < enemy.position.z) {
+        bul.position.z += 0.05;
+    }
+    if (bul.position.z > enemy.position.z) {
+        bul.position.z -= 0.05;
+    }
+    //console.log("bullet: "+ bul.position.y+" enemy: "+ enemy.position.y)
+    if (bul.position.x > enemy.position.x - .051 && bul.position.x < enemy.position.x + .051 &&
+        bul.position.y > enemy.position.y - .051 && bul.position.y < enemy.position.y + .051) {
+
+        scene.remove(bul);
+        enemyLoose(enemy, airArray);
+        bul.position.set(-100, -100);
+        enemy.position.set(100,1000,10000);
+        if(airArray.length == atargetedEnemy){
+            atargetedEnemy = 0;
+        }
+        abulletfired = 0;
+    }
+
+}
+
 
 function moveEnemy(enemy) {
-
-    switch(enemy.milestone){
+    switch (enemy.milestone) {
         case 0:
-            enemy.position.y-= enemyspeed
-            if(enemy.position.y <= -1)
-            {
+            enemy.position.y -= enemyspeed;
+            if (enemy.position.y <= 5) {
                 enemy.milestone = 1;
             }
             break;
         case 1:
-            enemy.position.x-= enemyspeed
-            if(enemy.position.x <= -1)
-            {
+            enemy.position.x -= enemyspeed
+            if (enemy.position.x <= 0) {
                 enemy.milestone = 2;
             }
             break;
         case 2:
-            enemy.position.y+= enemyspeed
-            if(enemy.position.y > 1)
-            {
+            enemy.position.y -= enemyspeed
+            if (enemy.position.y < -10) {
                 enemy.milestone = 3;
             }
             break;
         case 3:
             enemyWin(enemy);
             break;
+        case 4:
+            break;
     }
 }
 
-function enemyWin(enemy){
-    //enemy model must dissapear
-    //live count must lower
+function enemyWin(enemy) {
+    life--;
+    enemy.position.y = 11;
+    enemy.milestone = 4;
+    /*
+    console.log(enemy);
+    */
+
+    scene.remove(enemy);
+
+    document.getElementById("status").innerHTML = "Lives: " + life;
+
+    currentEnemies -= .5;
+    if (currentEnemies == 0 && life > 0) {
+        currentLevel += 1
+        console.log("new level: " + currentLevel)
+        level(currentLevel);
+    }
 }
 
-/**
- * Creates an instance of Tower
- *
- * @constructor
- * @this {Tower}
- * @param {player} player The owner of this tower.
- * @param {array} coord The coord of this tower in the arena.
- * @param {string} type The type of this tower.
- * @param {number} level The current level of this tower.
- */
-function Tower( player, coord, type, level ){
-    
-    // Add all default values to this tower instance
-    _.defaults(this, TOWER[type][level]);
-    
-    this.type = type;
-    this.level = level;
-    this.coord = coord; // Coordinate on game board
-    
-    this.busy = 0;
+function enemyLoose(enemy, array) {
 
-};
+    /*
+    console.log(enemy);
+    scene.remove(enemy);
+    */
+    score += 50;
+    scene.remove(enemy);
+    array.shift();
+    //array[0].milestone = 4;
+    document.getElementById("prompt").innerHTML = "Score: " + score;
+    currentEnemies -= .5;
 
-// Default tower values
-TOWER = {  
-    GATTLING : [
-        {
-            name : 'Gatling Tower',
-            damage : 6,
-            range : 180,
-            cooldown : 1000, // Milliseconds?
-            cost : 5,
-            attack : 'gatling',
-        }
-    ],
-    MISSILE : [
-        {
-            damage : 70,
-            range : 300,
-            cooldown : 3000,
-            cost : 15,
-            attack : 'missile'
-        }
-    ]   
-};
-
-function applyDamage ( arena, enemies, towers, delta )
-{
-    
-    for (var id in towers)
-    {
-        var tower = towers[id];
-        tower.busy = Math.max(tower.busy - delta, 0);
-            
-        for (var id in enemies )
-        {       
-            var enemy = enemies[id];
-        
-            if (! enemy)
-            {
-                continue;
-            }
-            
-            var coord = arena.normalToFull( tower.coord );
-            
-            var t = new THREE.Vector2( coord[1] * S_W,
-                                       coord[0] * S_W);
-            
-            var e = new THREE.Vector2( enemy[MESH].position.x,
-                                       enemy[MESH].position.y);
-            
-            var dist = e.distanceTo( t );
-            
-            // Minimum distance is (usually) 60, the size of a square.
-            if (dist < tower.range)
-            { 
-                if ('gattling' == tower.attack)
-                {
-                    var dir = new THREE.Vector2( t.x - e.x, t.y - e.y );
-                    dir.normalize();
-                    
-                    if (tower[TOP])
-                    {
-                        var theta = Math.atan( dir.y / dir.x );
-                        if (dir.x < 0)
-                        {  
-                            theta -= PI;   
-                        }     
-                        tower[TOP].rotation.z = theta;     
-                        enemy.damage( tower.damage );     
-                    }     
-                }
-                else if ('missile' == tower.attack)
-                { 
-                    var dir = new THREE.Vector2( t.x - e.x, t.y - e.y );
-                    dir.normalize();
-            
-                    if (tower[TOP])
-                    {
-                        var theta = Math.atan( dir.y / dir.x );
-                        if (dir.x < 0)
-                        {
-                            theta -= PI;
-                        }
-                        tower[TOP].rotation.z = theta;
-                        Geometry.createProjectile( arena, tower, enemy );  
-                    } 
-                }  
-                tower.busy = tower.cooldown;
-                break;  
-            }  
-        }      
-    }   
+    if (currentEnemies == 0 && life > 0) {
+        currentLevel += 1
+        console.log("new level: " + currentLevel)
+        level(currentLevel);
+    }
 }
 
-function createProjectile ( arena, tower, enemy )
-{  
-    var f;
-    var speed = 0.2;
-    var damage = tower.damage;
+function animate() {
+    moveEnemies(groundArray);
+    moveEnemies(airArray);
 
-    // Tower location
-    var coord = arena.normalToFull( tower.coord );
-    var source = new THREE.Vector2( coord[1] * S_W, coord[0] * S_W );
-    
-    // Projectile object
-    var proj = Loader.get( 'torpedo' );
-    
-    proj.position.x = source.x;
-    proj.position.y = source.y;
-    
-    Geometry.scene.add( proj );
-    
-    f = Idle.add( function( delta )
-    {
-        
-        var source = proj.position;
-        var target = enemy[MESH].position;
-        
-        // Vector between enemy and projectile
-        var path = new THREE.Vector3().sub(target, source);
-        path.z = 0;
-
-        // Vector to travel
-        var dist = path.clone().normalize().multiplyScalar( speed * delta );
-        
-        // Rotate projectile
-        var theta = Math.atan( dist.y / dist.x );
-        
-        if (dist.x > 0)
-        {
-            theta -= PI;
-        }
-        
-        proj.rotation.z = theta;
-        // If the target is dead, or if the projectile has reached the target
-        if ( enemy.health <= 0 ||
-            ( path.length() <= dist.length() ) ||
-            ( path.length() <= 12 ))
-        {
-            // Remove the projectile and deal damage
-            Geometry.createExplosion( target );
-            Geometry.scene.remove( proj );
-            Idle.remove( f );
-            enemy.damage( damage );      
-        }
-        else
-        { 
-            proj.position.x += dist.x;
-            proj.position.y += dist.y; 
-        } 
+    groundArray.forEach(element => {
+        FireGroundTurret(groundturretArray, element);
     });
-    
-    // Start the missile near the tip of the turret
-    Idle.functions[f]( 180 );
-    
+
+    airArray.forEach(element => {
+        FireAirTurret(airturretArray, element);
+    });
+
 }
+
+function run() {
+
+    if(life > 0) {
+    // update the picking ray with the camera and mouse position
+    raycaster.setFromCamera(mouse, camera);
+
+    // calculate objects intersecting the picking ray
+    var intersects = raycaster.intersectObjects(scene.children);
+
+    for (var i = 0; i < intersects.length; i++) {
+
+        intersects[i].object.material.color.set(0xffffff);
+
+    }
+
+
+    requestAnimationFrame(function () {
+        run();
+    });
+    renderer.render(scene, camera);
+
+
+    animate();
+    } else {
+        document.getElementById("title").innerHTML = "Level: GAME OVER";
+    }
+}
+
+function createScene(canvas) {
+    renderer = new THREE.WebGLRenderer({
+        canvas: canvas,
+        antialias: true
+    });
+    renderer.setSize(canvas.width, canvas.height);
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color(1.0, 1.0, 0.5);
+    camera = new THREE.PerspectiveCamera(45, canvas.width / canvas.height, 1, 4000);
+    camera.position.z = 24;
+    scene.add(camera);
+    let light = new THREE.AmbientLight(0xffffff, 1.0, 100000);
+    light.position.set(0, 0, 0);
+    scene.add(light);
+    let ambientLight = new THREE.AmbientLight(0xffccaa, 0.2);
+    scene.add(ambientLight);
+
+    towerGroup = new THREE.Object3D;
+    groundGroup = new THREE.Object3D;
+    airGroup = new THREE.Object3D;
+    groundGroup.position.set(5, 10, 0);
+    airGroup.position.set(0, 10, 0);
+ 
+    var planeTexture = "/resources/images/path.jpg";
+    let texture = new THREE.TextureLoader().load(planeTexture);
+    let material = new THREE.MeshPhongMaterial({
+        map: texture,
+        side: THREE.DoubleSide
+    });
+    geometry = new THREE.PlaneGeometry(15, 20, 15, 20);
+    var plane = new THREE.Mesh(geometry, material);
+    plane.position.set(0, 0, 0);
+
+    scene.add(plane);
+    scene.add(groundGroup);
+    scene.add(airGroup);
+    scene.add(towerGroup);
+
+    level(currentLevel);
+
+    var backGeometry = new THREE.SphereGeometry(200, 50, 50);
+    var backMaterial = new THREE.MeshPhongMaterial({
+    map: new THREE.ImageUtils.loadTexture("/models/greengreen.png"),
+    side: THREE.DoubleSide,
+    shininess: 0
+});
+var backField = new THREE.Mesh(backGeometry, backMaterial);
+scene.add(backField);
+
+}
+
+function level(number) {
+    document.getElementById("title").innerHTML = "Level: " + number;
+    enemyLimit = number;
+
+    groundArray = [];
+    airArray = [];
+
+    createEnemies();
+}
+
+var raycaster = new THREE.Raycaster();
+var mouse = new THREE.Vector2();
+
+function createTurret(event) {
+    let canvas = document.getElementById("webglcanvas");
+    // calculate mouse position in normalized device coordinates
+    // (-1 to +1) for both components
+
+    mouse.x = ((event.clientX / canvas.width) * 2 - 1)*15;
+    mouse.y = ((event.clientY / canvas.height) * -2 + 1)*10 ;
+
+
+    MoontextureUrl = "/models/CesiumMan_img0.jpg";
+    Moontexture = new THREE.TextureLoader().load(MoontextureUrl);
+    Moonmaterial = new THREE.MeshPhongMaterial({
+        map: Moontexture
+    });
+
+    switch (event.which) {
+        case 1:
+            let geom = new THREE.SphereGeometry(1, 15, 15);
+            let turr = new THREE.Mesh(geom, Moonmaterial);
+            turr.position.set(mouse.x, mouse.y, 0);
+            towerGroup.add(turr);
+            groundturretArray.push(mouse.x);
+            groundturretArray.push(mouse.y);
+            break;
+
+        case 3:
+            let g = new THREE.BoxGeometry(1.5, 1.5, 1.5);
+            let tur = new THREE.Mesh(g, Moonmaterial);
+            tur.position.set(mouse.x, mouse.y, 0);
+            towerGroup.add(tur);
+            airturretArray.push(mouse.x);
+            airturretArray.push(mouse.y);
+            break;
+
+    }
+
+
+}
+
+
+window.addEventListener('mousedown', createTurret, false);
