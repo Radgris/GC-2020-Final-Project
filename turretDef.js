@@ -20,16 +20,16 @@ function CreateGroundEnemy(){
 
     loader.load('/Proyecto final/models/CesiumMan.gltf', function ( obj ) {
 
-            
+
             obj.scene.rotation.x = Math.PI / 2;
             obj.scene.position.set(0,0,0);
             obj.scene.hitpoints = 3;
             obj.scene.milestone = 0;
             scene.add( obj.scene );
-            console.log(obj.scene.hitpoints);
             groundGroup.add(obj.scene);
             groundArray.push(obj.scene);
-            obj.scene = obj.scene.clone();
+
+
     
     
     }, undefined, function ( error ) {
@@ -44,14 +44,16 @@ function CreatFlyerEnemy(){
     loader.load('/Proyecto final/models/Duck.gltf', function ( obj ) {
 
 
-            scene.add( obj.scene );
+
             obj.scene.rotation.x = Math.PI / 2;
             obj.scene.rotation.y = -Math.PI / 2;
             obj.scene.position.set(0,0,3);
             obj.scene.hitpoints = 3;
             obj.scene.milestone = 0;
+            scene.add( obj.scene );
             airGroup.add(obj.scene);
             airArray.push(obj.scene);
+            obj.scene = obj.scene.clone();
         
     
     }, undefined, function ( error ) {
@@ -391,10 +393,10 @@ function createScene(canvas)
     scene.add(groundGroup);  
     scene.add(airGroup); 
 
-    for(var i = 0; i < enemyLimit; i++){
+
     CreateGroundEnemy();
     CreatFlyerEnemy();
-    }
+    
     
     
 }
