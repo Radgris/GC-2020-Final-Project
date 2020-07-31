@@ -4,8 +4,13 @@ camera = null,
 towerGroup = null,
 groundGroup = null,
 airGroup = null,
+bult=null,
+bul = null,
+
 groundArray=[],
-airArray=[];
+airArray=[],
+airturretArray=[],
+groundturretArray=[];
 
 var life = 20;
 var targetYPos = -15;
@@ -14,20 +19,27 @@ var delta = 0.05;
 var currentLevel = 1;
 var currentEnemies = 0;
 
+var gbulletfired = 0;
+var gbulletMax = 1;
+
+var abulletfired = 0;
+var abulletMax = 1;
+
+
 var levelLimit = 5;
 
-var enemyspeed = 0.12;
+var enemyspeed = 0.02;
 var enemyLimit = 5;
 
 var loader = new THREE.GLTFLoader();
 function CreateGroundEnemy(y) {
     loader.load('/models/CesiumMan.gltf', function ( obj ) {
             obj.scene.rotation.x = Math.PI / 2;
-            obj.scene.position.set(0,y,0);
-            obj.scene.hitpoints = 3;
+            obj.scene.position.set(4,y,0);
+            obj.scene.hitpoints = 1;
             obj.scene.milestone = 0;
             scene.add( obj.scene );
-            groundGroup.add(obj.scene);
+            //groundGroup.add(obj.scene);
             groundArray.push(obj.scene);
     
     }, undefined, function ( error ) {
@@ -39,11 +51,11 @@ function CreatFlyerEnemy(y){
     loader.load('/models/Duck.gltf', function ( obj ) {
             obj.scene.rotation.x = Math.PI / 2;
             obj.scene.rotation.y = -Math.PI / 2;
-            obj.scene.position.set(0,y+2,3);
-            obj.scene.hitpoints = 3;
+            obj.scene.position.set(-3.5,y+2,3);
+            obj.scene.hitpoints = 1;
             obj.scene.milestone = 0;
             scene.add( obj.scene );
-            airGroup.add(obj.scene);
+            //airGroup.add(obj.scene);
             airArray.push(obj.scene);
             //obj.scene = obj.scene.clone();
 
@@ -54,8 +66,8 @@ function CreatFlyerEnemy(y){
 
 function createEnemies(){
     for(currentEnemies;currentEnemies < enemyLimit; currentEnemies++){
-        CreateGroundEnemy(currentEnemies); 
-        CreatFlyerEnemy(currentEnemies*2);
+        CreateGroundEnemy(10+currentEnemies); 
+        CreatFlyerEnemy(10+currentEnemies*2);
     };
 }
 
@@ -65,27 +77,106 @@ function moveEnemies(array ) {
     });
 }
 
+function FireGroundTurret(array, enemy){
+    if(array[0] !== undefined){
+    MoontextureUrl = "/models/Monster.jpg";
+    Moontexture = new THREE.TextureLoader().load(MoontextureUrl);
+    Moonmaterial = new THREE.MeshPhongMaterial({ map: Moontexture });
+    for(var i =0; i<array.length; i+=2){
+        if(gbulletfired < gbulletMax){
+        let bullet = new THREE.SphereGeometry(.1, 15, 15);
+        bult= new THREE.Mesh(bullet, Moonmaterial);
+        bult.position.set(array[i], array[i+1], 0);
+        scene.add(bult);
+        //groundGroup.add(bult);
+        }
+    }
+    gbulletfired=1;
+
+    movegroundProj(bult, enemy);
+    }
+
+    
+}
+function movegroundProj(bult, enemy){
+    
+    if(bult.position.x < enemy.position.x){
+        bult.position.x += 0.05;
+    }
+    if(bult.position.x > enemy.position.x){
+        bult.position.x -= 0.05;
+    }
+    if(bult.position.y < enemy.position.y){
+        bult.position.y += 0.05;
+    }
+    if(bult.position.y > enemy.position.y){
+        bult.position.y -= 0.05;
+    }
+}
+
+function FireAirTurret(array, enemy){
+    if(array[0] !== undefined){
+    MoontextureUrl = "/models/Monster.jpg";
+    Moontexture = new THREE.TextureLoader().load(MoontextureUrl);
+    Moonmaterial = new THREE.MeshPhongMaterial({ map: Moontexture });
+
+    for(var i =0; i<array.length; i+=2){
+        if(abulletfired < abulletMax){
+        let bulle = new THREE.BoxGeometry(.1, .1, .1);
+        bul= new THREE.Mesh(bulle, Moonmaterial);
+        bul.position.set(array[i], array[i+1], 0);
+        scene.add(bul);
+        //towerGroup.add(bul);
+        }
+    }
+    abulletfired = 1;
+
+    moveairProj(bul, enemy);
+    }
+
+}
+function moveairProj(bul, enemy){
+    if(bul.position.x < enemy.position.x){
+        bul.position.x += 0.05;
+    }
+    if(bul.position.x > enemy.position.x){
+        bul.position.x -= 0.05;
+    }
+    if(bul.position.y < enemy.position.y){
+        bul.position.y += 0.05;
+    }
+    if(bul.position.y > enemy.position.y){
+        bul.position.y -= 0.05;
+    }
+    if(bul.position.z < enemy.position.z){
+        bul.position.z += 0.05;
+    }
+    if(bul.position.z > enemy.position.z){
+        bul.position.z -= 0.05;
+    }
+    
+}
 
 
 function moveEnemy(enemy) {
     switch(enemy.milestone){
         case 0:
             enemy.position.y -= enemyspeed;
-            if(enemy.position.y <= -9)
+            if(enemy.position.y <= 5)
             {
                 enemy.milestone = 1;
             }
             break;
         case 1:
             enemy.position.x-= enemyspeed
-            if(enemy.position.x <= -3)
+            if(enemy.position.x <= 0)
             {
                 enemy.milestone = 2;
             }
             break;
         case 2:
             enemy.position.y -= enemyspeed
-            if(enemy.position.y < -20)
+            if(enemy.position.y < -10)
             {
                 enemy.milestone = 3;
             }
@@ -100,7 +191,7 @@ function moveEnemy(enemy) {
 
 function enemyWin(enemy){
     life--;
-    enemy.position.y = 1;
+    enemy.position.y = 11;
     enemy.milestone = 4;
     /*
     console.log(enemy);
@@ -121,6 +212,14 @@ function animate()
 {
     moveEnemies(groundArray);
     moveEnemies(airArray);  
+
+    groundArray.forEach(element => {
+        FireGroundTurret(groundturretArray, element);
+    });
+
+    airArray.forEach(element => {
+        FireAirTurret(airturretArray, element);
+    });
 }
 
 function run() {
@@ -219,6 +318,8 @@ function createTurret( event ) {
         let turr= new THREE.Mesh(geom, Moonmaterial);
         turr.position.set(mouse.x, mouse.y, 0);
         towerGroup.add(turr);
+        groundturretArray.push(mouse.x);
+        groundturretArray.push(mouse.y);
         break;
 
         case 3:
@@ -226,6 +327,8 @@ function createTurret( event ) {
         let tur= new THREE.Mesh(g, Moonmaterial);
         tur.position.set(mouse.x, mouse.y, 0);
         towerGroup.add(tur);
+        airturretArray.push(mouse.x);
+        airturretArray.push(mouse.y);
         break;
 
     }
