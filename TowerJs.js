@@ -7,26 +7,26 @@ airGroup = null,
 groundArray=[],
 airArray=[];
 
-groundArray = [];
-airArray = [];
-var enemyspeed = 0.05;
+var enemyspeed = 0.12;
 
+var life = 100;
 
 var targetYPos = -15;
 var ystart = 10;
 var delta = 0.05;
+var currentEnemies=0;
 var enemyLimit = 5;
 var levelLimit = 5;
 
 
 
-var waypoints = [[1,1],[1,-1],[-1,-1],[-1,1]]
+//var waypoints = [[5,5],[1,-1],[-1,-1],[-1,1]]
 
 var loader = new THREE.GLTFLoader();
-function CreateGroundEnemy() {
+function CreateGroundEnemy(y) {
     loader.load('/Proyecto final/models/CesiumMan.gltf', function ( obj ) {
             obj.scene.rotation.x = Math.PI / 2;
-            obj.scene.position.set(0,0,0);
+            obj.scene.position.set(0,y,0);
             obj.scene.hitpoints = 3;
             obj.scene.milestone = 0;
             scene.add( obj.scene );
@@ -43,15 +43,13 @@ function CreateGroundEnemy() {
     } );
 }
 
-function CreatFlyerEnemy(){
+function CreatFlyerEnemy(y){
 
     loader.load('/Proyecto final/models/Duck.gltf', function ( obj ) {
 
-
-
             obj.scene.rotation.x = Math.PI / 2;
             obj.scene.rotation.y = -Math.PI / 2;
-            obj.scene.position.set(0,0,3);
+            obj.scene.position.set(0,y,3);
             obj.scene.hitpoints = 3;
             obj.scene.milestone = 0;
             scene.add( obj.scene );
@@ -69,13 +67,15 @@ function CreatFlyerEnemy(){
 
 function moveEnemies(array ) {
     array.forEach(element => {
-        element.position.y-=0.05;
-        if(element.position.y <= targetYPos){
-            console.log("lose");
-        }
+        //element.position.y-=0.05;
+        moveEnemy(element);
     });
+    if(currentEnemies < enemyLimit){
+    currentEnemies++;
+    CreateGroundEnemy(currentEnemies); 
+    CreatFlyerEnemy(currentEnemies*2);
+    } 
 
-    CreateGroundEnemy();  
 }
 
 function createArenaGeometry( arena ){
@@ -115,46 +115,27 @@ function createArenaGeometry( arena ){
     }  
 }
 
-function CreateGroundEnemy(){
-
-    loader.load('/Proyecto final/models/CesiumMan.gltf', function ( obj ) {
-
-        for(var i = 0; i < enemyLimit; i++){
-            scene.add( obj.scene );
-            obj.scene.rotation.x = Math.PI / 2;
-            obj.scene.position.set(0,0,0);
-            obj.scene.hitpoints = 3;
-            console.log(obj.scene.hitpoints);
-            groundGroup.add(obj.scene);
-        }
-    
-    }, undefined, function ( error ) {
-    
-        console.error( error );
-    
-    } );
-}
 
 function moveEnemy(enemy) {
 
     switch(enemy.milestone){
         case 0:
-            enemy.position.y-= enemyspeed
-            if(enemy.position.y <= -1)
+            enemy.position.y -= enemyspeed;
+            if(enemy.position.y <= -9)
             {
                 enemy.milestone = 1;
             }
             break;
         case 1:
             enemy.position.x-= enemyspeed
-            if(enemy.position.x <= -1)
+            if(enemy.position.x <= -3)
             {
                 enemy.milestone = 2;
             }
             break;
         case 2:
-            enemy.position.y+= enemyspeed
-            if(enemy.position.y > 1)
+            enemy.position.y -= enemyspeed
+            if(enemy.position.y < -20)
             {
                 enemy.milestone = 3;
             }
@@ -162,12 +143,19 @@ function moveEnemy(enemy) {
         case 3:
             enemyWin(enemy);
             break;
+        case 4:
+            break;
     }
 }
 
 function enemyWin(enemy){
     //enemy model must dissapear
     //live count must lower
+    //console.log("win");
+    life--;
+    enemy.position.y = 0;
+    enemy.milestone=4;
+    console.log(life);
 }
 
 /**
@@ -359,6 +347,22 @@ function animate()
 
 function run() {
     requestAnimationFrame(function() { run(); });
+    renderer.render( scene, camera );
+    var orbitControls = new THREE.OrbitControls( camera, renderer.domElement );
+    orbitControls.enabled = true;
+    orbitControls.enableZoom = true;
+    orbitControls.enablePan = true;
+    //orbitControls.enableDamping = true;
+    orbitControls.autoRotate = false;
+    orbitControls.enableKeys = true;
+    orbitControls.panSpeed=0.005;
+    orbitControls.zoomSpeed=0.005;
+    orbitControls.rotateSpeed=0.005;
+    orbitControls.keyPanSpeed=0.05;
+    orbitControls.maxZoom = 2.0;
+    //orbitControls.dampingFactor = 0.99;
+
+    animate();
     
 }
 
@@ -379,7 +383,7 @@ function createScene(canvas)
 
     // Add  a camera so we can view the scene
     camera = new THREE.PerspectiveCamera( 45, canvas.width / canvas.height, 1, 4000 );
-    camera.position.z = 20;
+    camera.position.z = 24;
     scene.add(camera);
 
     // Create a group to hold all the objects
@@ -401,7 +405,7 @@ function createScene(canvas)
     groundGroup = new THREE.Object3D;
     airGroup = new THREE.Object3D;
     groundGroup.position.set(5,10,0);
-    airGroup.position.set(-5,10,0);
+    airGroup.position.set(0,10,0);
 
     
     geometry = new THREE.PlaneGeometry( 15, 20, 15, 20 );
